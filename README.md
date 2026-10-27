@@ -3,6 +3,9 @@
 A small Lenovo Legion Space / Vantage replacement for Linux, built with [Quickshell](https://quickshell.org).
 Made for the **Legion Pro 7 16IAX10H (Gen 10)**; other recent Legions may work in part.
 
+> **Not affiliated with or endorsed by Lenovo.** Lenovo, Legion, Legion Space and Vantage are trademarks of Lenovo.
+> This is an independent tool that works with Lenovo hardware.
+
 ## Features
 
 - **Performance**: power modes (platform profile) and firmware power/temperature limits
@@ -51,3 +54,12 @@ profile is backed up to `~/.config/legion-control/`, and the "Default" mode rest
 | `legion-ctl` | settings helper (root, through pkexec) |
 | `install.sh` | root installer |
 | `install-user.sh` | user installer |
+
+## Credits
+
+The lighting protocol comes from [OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)'s Lenovo
+USB controller documentation and driver.
+
+## Licence
+
+[GPL-3.0](LICENSE). No warranty: this changes firmware settings, use it at your own risk.
