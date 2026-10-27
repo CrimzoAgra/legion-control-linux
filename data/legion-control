@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Legion Control: Lenovo Legion settings and updates (~/.local/share/legion-control/shell.qml)
+exec qs -p "$HOME/.local/share/legion-control" "$@"

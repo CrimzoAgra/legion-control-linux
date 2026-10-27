@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Legion Control
+GenericName=Laptop settings and updates
+Comment=Power modes, battery, keyboard and firmware updates for your Lenovo Legion
+Exec=@HOME@/.local/bin/legion-control
+Icon=legion-control
+Categories=Settings;HardwareSettings;
+Keywords=lenovo;legion;vantage;space;power;battery;bios;firmware;update;
+StartupWMClass=legion-control

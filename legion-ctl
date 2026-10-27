@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+"""Root helper for Legion Control (installed to /usr/local/bin/legion-ctl, run through pkexec).
+Only the settings below can be read or changed, and values are checked first.
+
+  legion-ctl get                 all settings as JSON
+  legion-ctl set <key> <value>   change one setting
+  legion-ctl light <id>          read a firmware light (Lenovo lighting WMI, through acpi_call)
+Keys: profile, conservation, usb_charging, fn_lock, attr:<firmware attribute>,
+      light:<id> "<a>,<b>"  (firmware light, e.g. 3 = Legion logo: "1,0" on, "2,0" off)
+"""
+import glob
+import json
+import os
+import sys
+
+PROFILE = "/sys/firmware/acpi/platform_profile"
+CHOICES = "/sys/firmware/acpi/platform_profile_choices"
+IDEAPAD = "/sys/bus/platform/devices/VPC2004:00"
+SWITCHES = {"conservation": "conservation_mode", "usb_charging": "usb_charging", "fn_lock": "fn_lock"}
+ATTRS = next(iter(glob.glob("/sys/class/firmware-attributes/lenovo-wmi-other-*/attributes")), None)
+# Lenovo lighting WMI (GUID 8C5B9127-...): \_SB_.GZFD.WMAF, method 1 = get light, 2 = set light
+ACPI_CALL = "/proc/acpi/call"
+LIGHT_METHOD = "\\_SB_.GZFD.WMAF"
+
+
+def acpi(method_id: int, data: list) -> str:
+    if not os.path.exists(ACPI_CALL):
+        os.system("modprobe acpi_call 2>/dev/null")
+    with open(ACPI_CALL, "w") as f:
+        f.write(f"{LIGHT_METHOD} 0 {method_id} b{''.join(f'{b:02x}' for b in data)}")
+    with open(ACPI_CALL) as f:
+        return f.read().strip("\x00").strip()
+
+
+def light_get(light_id: int) -> str:
+    return acpi(1, [light_id])
+
+
+def read(path: str, default=None):
+    try:
+        with open(path) as f:
+            return f.read().strip()
+    except OSError:
+        return default
+
+
+def write(path: str, value: str) -> None:
+    with open(path, "w") as f:
+        f.write(value)
+
+
+def attributes() -> dict:
+    out = {}
+    if not ATTRS:
+        return out
+    for d in sorted(glob.glob(f"{ATTRS}/*")):
+        name = os.path.basename(d)
+        cur = read(f"{d}/current_value")
+        if cur is None:
+            continue
+        out[name] = {
+            "name": read(f"{d}/display_name", name),
+            "value": cur,
+            "default": read(f"{d}/default_value"),
+            "min": read(f"{d}/min_value"),
+            "max": read(f"{d}/max_value"),
+            "step": read(f"{d}/scalar_increment"),
+            "type": read(f"{d}/type"),
+        }
+    return out
+
+
+def get() -> dict:
+    return {
+        "profile": read(PROFILE),
+        "profiles": (read(CHOICES) or "").split(),
+        **{k: read(f"{IDEAPAD}/{f}") for k, f in SWITCHES.items()},
+        "attrs": attributes(),
+    }
+
+
+def set_value(key: str, value: str) -> None:
+    if key == "profile":
+        if value not in (read(CHOICES) or "").split():
+            sys.exit(f"unknown profile: {value}")
+        write(PROFILE, value)
+    elif key in SWITCHES:
+        if value not in ("0", "1"):
+            sys.exit("value must be 0 or 1")
+        write(f"{IDEAPAD}/{SWITCHES[key]}", value)
+    elif key.startswith("light:"):
+        lid = key[6:]
+        parts = value.split(",")
+        if not lid.isdigit() or not 0 <= int(lid) <= 7 or len(parts) != 2 or not all(p.isdigit() and int(p) < 256 for p in parts):
+            sys.exit("light: id 0-7 and value \"a,b\" (0-255)")
+        print(acpi(2, [int(lid), int(parts[0]), int(parts[1])]))
+        return
+    elif key.startswith("attr:") and ATTRS:
+        name = key[5:]
+        if "/" in name or not os.path.isdir(f"{ATTRS}/{name}"):
+            sys.exit(f"unknown setting: {name}")
+        d = f"{ATTRS}/{name}"
+        lo, hi = read(f"{d}/min_value"), read(f"{d}/max_value")
+        if not value.isdigit() or (lo and int(value) < int(lo)) or (hi and int(value) > int(hi)):
+            sys.exit(f"{name}: value out of range {lo}-{hi}")
+        write(f"{d}/current_value", value)
+    else:
+        sys.exit(f"unknown setting: {key}")
+
+
+if __name__ == "__main__":
+    try:
+        if len(sys.argv) == 3 and sys.argv[1] == "light" and sys.argv[2].isdigit() and int(sys.argv[2]) <= 7:
+            print(light_get(int(sys.argv[2])))
+        elif sys.argv[1:2] == ["get"]:
+            print(json.dumps(get()))
+        elif len(sys.argv) == 4 and sys.argv[1] == "set":
+            set_value(sys.argv[2], sys.argv[3])
+            if not sys.argv[2].startswith("light:"):
+                print(json.dumps(get()))
+        else:
+            sys.exit(__doc__)
+    except OSError as e:
+        sys.exit(f"error: {e.strerror} ({e.filename})")
