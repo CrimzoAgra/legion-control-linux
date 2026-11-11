@@ -15,7 +15,8 @@ Windows or Lenovo's own updater.
 ## Apps and system
 
 **Update now** opens a terminal that updates your system packages, AUR packages and Flatpaks
-(`sudo pacman -Syu; paru -Sua; flatpak update`). On AgrOS, where the system updates itself at every boot, the page
+(`sudo pacman -Syu`, then `paru -Sua` and `flatpak update` if you have paru and Flatpak). It uses the first
+terminal you have of foot, Alacritty, kitty, Konsole and xterm. On AgrOS, where the system updates itself at every boot, the page
 also shows when that last ran.
 
 Next: [Troubleshooting](07-troubleshooting.md)

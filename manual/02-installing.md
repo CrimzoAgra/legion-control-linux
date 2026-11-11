@@ -23,7 +23,7 @@ Your user needs to be in the `wheel` group: that's what lets the app change sett
 ## Remove
 
 ```sh
-sudo rm /usr/local/bin/legion-ctl /etc/polkit-1/rules.d/50-legion-ctl.rules /etc/udev/rules.d/70-legion-rgb.rules
+sudo rm /usr/local/bin/legion-ctl /etc/polkit-1/rules.d/50-legion-ctl.rules /etc/udev/rules.d/70-legion-rgb.rules /etc/modules-load.d/acpi_call.conf
 ```
 
 Next: [Performance](03-performance.md)

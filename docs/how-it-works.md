@@ -41,8 +41,8 @@ filled in).
 
 It needs pacman. At the end it prints `legion-ctl get` and the devices fwupd knows.
 
-Remove: `sudo rm /usr/local/bin/legion-ctl /etc/polkit-1/rules.d/50-legion-ctl.rules /etc/udev/rules.d/70-legion-rgb.rules`.
-That leaves `/etc/modules-load.d/acpi_call.conf` and the fwupd and acpi_call-dkms packages in place.
+Remove: `sudo rm /usr/local/bin/legion-ctl /etc/polkit-1/rules.d/50-legion-ctl.rules /etc/udev/rules.d/70-legion-rgb.rules /etc/modules-load.d/acpi_call.conf`.
+That leaves the fwupd and acpi_call-dkms packages in place.
 
 ## The settings helper: legion-ctl
 
@@ -101,8 +101,8 @@ Dynamic Lighting interface.
 ## Updates
 
 - **Firmware**: `fwupdmgr get-devices --json`, then `fwupdmgr refresh --force` and `fwupdmgr get-updates --json`. The
-  app lists updatable and internal devices. **Install** runs `fwupdmgr update` in Alacritty.
-- **Apps and system**: **Update now** runs `sudo pacman -Syu; paru -Sua; flatpak update` in Alacritty. The "last run"
+  app lists updatable and internal devices. **Install** runs `fwupdmgr update` in a terminal (the first of foot, Alacritty, kitty, Konsole and xterm installed).
+- **Apps and system**: **Update now** runs `sudo pacman -Syu`, then `paru -Sua` and `flatpak update` when they're installed, in that terminal. The "last run"
   time is read from `/var/log/auto-update.log`, AgrOS's boot-time updater, when it exists.
 
 ## The app

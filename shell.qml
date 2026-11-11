@@ -286,8 +286,21 @@ ShellRoot {
         }
     }
 
+    // In the first terminal that's installed (foot on AgrOS; Alacritty was the only one it tried, and with none it did
+    // nothing)
     function inTerminal(script: string): void {
-        Quickshell.execDetached(["alacritty", "--title", "Legion Control: updates", "-e", "sh", "-c", `${script}; echo; read -p 'Press Enter to close' _`]);
+        const run = `${script}; echo; read -p 'Press Enter to close' _`;
+        Quickshell.execDetached(["sh", "-c", `t="Legion Control: updates"
+for term in foot alacritty kitty konsole xterm; do
+    command -v "$term" >/dev/null || continue
+    case $term in
+        foot|kitty) exec "$term" --title "$t" sh -c "$1" ;;
+        alacritty) exec alacritty --title "$t" -e sh -c "$1" ;;
+        konsole) exec konsole -p tabtitle="$t" -e sh -c "$1" ;;
+        xterm) exec xterm -T "$t" -e sh -c "$1" ;;
+    esac
+done
+notify-send "Legion Control" "No terminal to run the update in (foot, Alacritty, kitty, Konsole or xterm)"`, "sh", run]);
     }
 
     // ---- window ----
@@ -847,7 +860,7 @@ ShellRoot {
                                 Button {
                                     filled: true
                                     text: "Update now"
-                                    onClicked: root.inTerminal("sudo pacman -Syu; paru -Sua; flatpak update")
+                                    onClicked: root.inTerminal("sudo pacman -Syu; command -v paru >/dev/null && paru -Sua; command -v flatpak >/dev/null && flatpak update")
                                 }
                             }
                         }

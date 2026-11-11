@@ -5,7 +5,7 @@
 #  - a polkit rule so admins (wheel) can use that helper without typing a password
 #  - a udev rule so you can control the keyboard lighting
 #  - acpi_call, for the firmware-controlled Legion logo light
-# Remove: sudo rm /usr/local/bin/legion-ctl /etc/polkit-1/rules.d/50-legion-ctl.rules /etc/udev/rules.d/70-legion-rgb.rules
+# Remove: sudo rm /usr/local/bin/legion-ctl /etc/polkit-1/rules.d/50-legion-ctl.rules /etc/udev/rules.d/70-legion-rgb.rules /etc/modules-load.d/acpi_call.conf
 set -e
 [[ $EUID -eq 0 ]] || { echo "Run with sudo"; exit 1; }
 src=$(dirname "$(readlink -f "$0")")
